@@ -1,0 +1,38 @@
+{
+  "name": "chmod-webpack-plugin",
+  "version": "0.1.0",
+  "descriptipon": "A webpack plugin that allows to manage files and directories permissions",
+  "keywords": [
+    "webpack",
+    "plugin",
+    "permissions",
+    "chmod",
+    "node"
+  ],
+  "homepage": "https://github.com/xobotyi/chmod-webpack-plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xobotyi/chmod-webpack-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xobotyi/chmod-webpack-plugin/issues"
+  },
+  "license": "MIT",
+  "main": "chmod-webpack-plugin.js",
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "glob": "^7.1.3"
+  },
+  "devDependencies": {
+    "codacy-coverage": "^3.0.0",
+    "jest": "^23.5.0",
+    "rimraf": "^2.6.2"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --no-cache",
+    "push-codacy-coverage": "cat ./coverage/lcov.info | codacy-coverage -p .",
+    "prepublishOnly": "npm test"
+  }
+}
