@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const glob = require("glob");
 const os = require("os");
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 const PLUGIN_NAME = "chmod-webpack-plugin";
 
