@@ -184,8 +184,8 @@ module.exports = function () {
 
             fs.chmodSync(testDir1, "770");
             fs.chmodSync(testDir2, "770");
-            fs.chmodSync(testFile1, "645");
-            fs.chmodSync(testFile2, "645");
+            fs.chmodSync(testFile1, "745");
+            fs.chmodSync(testFile2, "745");
         });
         afterEach(() => {
             rimraf.sync(testDir1);
@@ -265,8 +265,8 @@ module.exports = function () {
 
                 expect(getChmod(testDir1)).toEqual(755);
                 expect(getChmod(testDir2)).toEqual(755);
-                expect(getChmod(testFile1)).toEqual(645);
-                expect(getChmod(testFile2)).toEqual(645);
+                expect(getChmod(testFile1)).toEqual(745);
+                expect(getChmod(testFile2)).toEqual(745);
             });
 
             it("should set permissions only for files if filesOnly is set", () => {
@@ -299,7 +299,21 @@ module.exports = function () {
                 expect(getChmod(testDir1)).toEqual(755);
                 expect(getChmod(testDir2)).toEqual(755);
                 expect(getChmod(testFile1)).toEqual(755);
-                expect(getChmod(testFile2)).toEqual(645);
+                expect(getChmod(testFile2)).toEqual(745);
+            });
+
+            it("dry run should not change real permissions change but should process paths", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', exclude: testFile2, silent: true, mode: "000", dryRun: true});
+
+                const result = plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(770);
+                expect(getChmod(testDir2)).toEqual(770);
+                expect(getChmod(testFile1)).toEqual(745);
+                expect(getChmod(testFile2)).toEqual(745);
+
+                expect(result[0].ignored.length).toEqual(1);
+                expect(result[0].processed.length).toEqual(3);
             });
         }
     });
