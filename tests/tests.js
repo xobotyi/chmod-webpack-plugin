@@ -184,15 +184,15 @@ module.exports = function () {
 
             fs.chmodSync(testDir1, "770");
             fs.chmodSync(testDir2, "770");
-            fs.chmodSync(testFile1, "745");
-            fs.chmodSync(testFile2, "745");
+            fs.chmodSync(testFile1, "770");
+            fs.chmodSync(testFile2, "770");
         });
         afterEach(() => {
             rimraf.sync(testDir1);
         });
 
         it("should throw if configs are empty", () => {
-            const plugin = new ChmodWebpackPlugin({path: "somePath1", silent: true});
+            const plugin = new ChmodWebpackPlugin({path: "somePath1", silent: true, mode: 770});
 
             try {
                 plugin.setPermissions();
@@ -203,7 +203,7 @@ module.exports = function () {
         });
 
         it("should not perform an output if silent is set", () => {
-            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true});
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 770});
             const origLog = global.console.log;
 
             global.console.log = jest.fn();
@@ -216,7 +216,7 @@ module.exports = function () {
         });
 
         it("should perform single output for each glob if nither verbose nor silent are set", () => {
-            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**'});
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', mode: 770});
             const origLog = global.console.log;
 
             global.console.log = jest.fn();
@@ -229,7 +229,7 @@ module.exports = function () {
         });
 
         it("should perform single output for each file matching the glob if verbose is set", () => {
-            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', verbose: true});
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', verbose: true, mode: 770});
             const origLog = global.console.log;
 
             global.console.log = jest.fn();
@@ -243,63 +243,63 @@ module.exports = function () {
 
         if (os.platform() !== "win32") {
             it("should set permissions for files", () => {
-                const plugin = new ChmodWebpackPlugin({path: testFile1, silent: true, mode: 755});
+                const plugin = new ChmodWebpackPlugin({path: testFile1, silent: true, mode: 765});
 
                 plugin.setPermissions();
 
-                expect(getChmod(testFile1)).toEqual(755);
+                expect(getChmod(testFile1)).toEqual(765);
             });
 
             it("should set permissions for directories", () => {
-                const plugin = new ChmodWebpackPlugin({path: testDir1, silent: true, mode: 755});
+                const plugin = new ChmodWebpackPlugin({path: testDir1, silent: true, mode: 765});
 
                 plugin.setPermissions();
 
-                expect(getChmod(testDir1)).toEqual(755);
+                expect(getChmod(testDir1)).toEqual(765);
             });
 
             it("should set permissions only for directories if directoriesOnly is set", () => {
-                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, directoriesOnly: true});
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 765, directoriesOnly: true});
 
                 plugin.setPermissions();
 
-                expect(getChmod(testDir1)).toEqual(755);
-                expect(getChmod(testDir2)).toEqual(755);
-                expect(getChmod(testFile1)).toEqual(745);
-                expect(getChmod(testFile2)).toEqual(745);
+                expect(getChmod(testDir1)).toEqual(765);
+                expect(getChmod(testDir2)).toEqual(765);
+                expect(getChmod(testFile1)).toEqual(770);
+                expect(getChmod(testFile2)).toEqual(770);
             });
 
             it("should set permissions only for files if filesOnly is set", () => {
-                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, filesOnly: true});
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 765, filesOnly: true});
 
                 plugin.setPermissions();
 
                 expect(getChmod(testDir1)).toEqual(770);
                 expect(getChmod(testDir2)).toEqual(770);
-                expect(getChmod(testFile1)).toEqual(755);
-                expect(getChmod(testFile2)).toEqual(755);
+                expect(getChmod(testFile1)).toEqual(765);
+                expect(getChmod(testFile2)).toEqual(765);
             });
 
             it("should set permissions set permissions both for files and directories if both directoriesOnly and filesOnlyare set", () => {
-                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, filesOnly: true, directoriesOnly: true});
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 765, filesOnly: true, directoriesOnly: true});
 
                 plugin.setPermissions();
 
-                expect(getChmod(testDir1)).toEqual(755);
-                expect(getChmod(testDir2)).toEqual(755);
-                expect(getChmod(testFile1)).toEqual(755);
-                expect(getChmod(testFile2)).toEqual(755);
+                expect(getChmod(testDir1)).toEqual(765);
+                expect(getChmod(testDir2)).toEqual(765);
+                expect(getChmod(testFile1)).toEqual(765);
+                expect(getChmod(testFile2)).toEqual(765);
             });
 
             it("should not set the permission for excluded paths", () => {
-                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', exclude: testFile2, silent: true, mode: 755});
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', exclude: testFile2, silent: true, mode: 765});
 
                 plugin.setPermissions();
 
-                expect(getChmod(testDir1)).toEqual(755);
-                expect(getChmod(testDir2)).toEqual(755);
-                expect(getChmod(testFile1)).toEqual(755);
-                expect(getChmod(testFile2)).toEqual(745);
+                expect(getChmod(testDir1)).toEqual(765);
+                expect(getChmod(testDir2)).toEqual(765);
+                expect(getChmod(testFile1)).toEqual(765);
+                expect(getChmod(testFile2)).toEqual(770);
             });
 
             it("dry run should not change real permissions change but should process paths", () => {
@@ -309,8 +309,8 @@ module.exports = function () {
 
                 expect(getChmod(testDir1)).toEqual(770);
                 expect(getChmod(testDir2)).toEqual(770);
-                expect(getChmod(testFile1)).toEqual(745);
-                expect(getChmod(testFile2)).toEqual(745);
+                expect(getChmod(testFile1)).toEqual(770);
+                expect(getChmod(testFile2)).toEqual(770);
 
                 expect(result[0].ignored.length).toEqual(1);
                 expect(result[0].processed.length).toEqual(3);

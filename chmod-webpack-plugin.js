@@ -139,8 +139,6 @@ class ChmodWebpackPlugin
                                 if (!config.dryRun) {
                                     fs.chmodSync(match, config.mode);
                                 }
-
-                                processed.push(match);
                             }
                         }
                         else {
@@ -148,12 +146,11 @@ class ChmodWebpackPlugin
                                 if (!config.dryRun) {
                                     fs.chmodSync(match, config.mode);
                                 }
-
-                                processed.push(match);
                             }
                         }
 
                         !config.silent && config.verbose && console.log(`  ${match}\t${chalk.green(config.mode)}`);
+                        processed.push(match);
                     });
 
                 !config.silent && console.log(`${PLUGIN_NAME}: ${pathToProcess}\t${chalk.green(config.mode)} (${processed.length} path(s), ${ignored.length} ignored)`);
