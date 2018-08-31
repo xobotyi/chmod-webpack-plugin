@@ -156,11 +156,11 @@ class ChmodWebpackPlugin
                 !config.silent && console.log(`${PLUGIN_NAME}: ${pathToProcess}\t${chalk.green(config.mode)} (${processed.length} path(s), ${ignored.length} ignored)`);
 
                 result.push({
-                                path:      pathToProcess,
-                                result:    `processed [${processed.length} path(s), ${ignored.length} ignored]`,
-                                processed: processed,
-                                ignored:   ignored,
-                                mode:      config.mode,
+                                path:   pathToProcess,
+                                result: `processed [${processed.length} path(s), ${ignored.length} ignored]`,
+                                processed,
+                                ignored,
+                                mode:   config.mode,
                             });
             }
         }
