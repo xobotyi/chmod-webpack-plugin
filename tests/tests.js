@@ -56,7 +56,7 @@ module.exports = function () {
             expect(errorsEmitted).toBeFalsy();
         });
 
-        it("should throw on bad path parameter", () => {
+        it("should throw on bad path", () => {
             try {
                 new ChmodWebpackPlugin({path: 123123});
             }
@@ -84,6 +84,42 @@ module.exports = function () {
                 new ChmodWebpackPlugin({path: "somePath1"});
                 new ChmodWebpackPlugin([{path: "somePath2"}]);
                 new ChmodWebpackPlugin([{path: ["somePath3", "somePath4"]}]);
+            }
+            catch (e) {
+                errorsEmitted = true;
+            }
+
+            expect(errorsEmitted).toBeFalsy();
+        });
+
+        it("should throw on bad exclude", () => {
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", exclude: 123123});
+            }
+            catch (e) {
+                expect(e).toBeInstanceOf(Error);
+            }
+
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", exclude: [null, 123]});
+            }
+            catch (e) {
+                expect(e).toBeInstanceOf(Error);
+            }
+
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", exclude: []});
+            }
+            catch (e) {
+                expect(e).toBeInstanceOf(Error);
+            }
+
+            let errorsEmitted = false;
+
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", exclude: "somePath1"});
+                new ChmodWebpackPlugin([{path: "somePath1", exclude: "somePath2"}]);
+                new ChmodWebpackPlugin([{path: "somePath1", exclude: ["somePath3", "somePath4"]}]);
             }
             catch (e) {
                 errorsEmitted = true;
