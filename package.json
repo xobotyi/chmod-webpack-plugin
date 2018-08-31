@@ -1,6 +1,6 @@
 {
   "name": "chmod-webpack-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "descriptipon": "A webpack plugin that allows to manage files and directories permissions",
   "keywords": [
     "webpack",
