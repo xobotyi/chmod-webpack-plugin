@@ -8,13 +8,6 @@ const PLUGIN_NAME = "chmod-webpack-plugin";
 
 class ChmodWebpackPlugin
 {
-    static fixWindowsPath(pathToFix, forceWindowsSeparatorSplit = false) {
-        const splittedPath = pathToFix.split(forceWindowsSeparatorSplit ? path.win32.sep : path.sep);
-        splittedPath[0] = splittedPath[0].toUpperCase();
-
-        return splittedPath.join("/");
-    }
-
     constructor(options, commonOptions = {}) {
         this.configs = [];
 
@@ -36,11 +29,12 @@ class ChmodWebpackPlugin
                 recursive:       true,
                 mode:            644,
                 root:            undefined,
-                verbose:         true,
+                verbose:         false,
                 silent:          false,
                 dryDun:          false,
                 filesOnly:       false,
                 directoriesOnly: false,
+                exclude:         [],
                 ...commonOptions,
                 ...config,
             };
@@ -65,6 +59,19 @@ class ChmodWebpackPlugin
                 }
             }
 
+            if (typeof cfg.exclude === "string") {
+                cfg.exclude = [cfg.exclude];
+            }
+            else if (!Array.isArray(cfg.exclude)) {
+                throw new Error("exclude has to be a string or an array of strings, got " + typeof cfg.exclude);
+            }
+
+            for (let path of cfg.exclude) {
+                if (typeof path !== "string") {
+                    throw new Error("exclude elements elements expected to be a string, got " + typeof path);
+                }
+            }
+
             if (cfg.root && typeof cfg.root !== "string") {
                 throw new Error("root has to be a string");
             }
@@ -82,6 +89,13 @@ class ChmodWebpackPlugin
         this.hookCallback = this.hookCallback.bind(this);
     }
 
+    static fixWindowsPath(pathToFix, forceWindowsSeparatorSplit = false) {
+        const splittedPath = pathToFix.split(forceWindowsSeparatorSplit ? path.win32.sep : path.sep);
+        splittedPath[0] = splittedPath[0].toUpperCase();
+
+        return splittedPath.join("/");
+    }
+
     setPermissions() {
         const result = [];
 
@@ -93,42 +107,57 @@ class ChmodWebpackPlugin
                     pathToProcess = ChmodWebpackPlugin.fixWindowsPath(pathToProcess);
                 }
 
+                const excludedPaths = [];
                 const ignored = [];
                 const processed = [];
 
                 const matchedDirectories = [];
                 const matchedFiles = [];
 
-                glob.sync(pathToProcess, {
-                        cwd:      config.root,
-                        absolute: true,
-                        mark:     true,
-                    })
+                config.exclude.forEach((excludeGlob) => {
+                    excludedPaths.push(...glob.sync(excludeGlob,
+                                                    {
+                                                        cwd:      config.root,
+                                                        absolute: true,
+                                                        mark:     true,
+                                                    }));
+                });
+
+                glob.sync(pathToProcess,
+                          {
+                              cwd:      config.root,
+                              absolute: true,
+                              mark:     true,
+                          })
                     .forEach((match) => {
-                        //if (excludedPaths.includes(match)) {
-                        //    return ignored.push(match);
-                        //}
+                        if (excludedPaths.includes(match)) {
+                            ignored.push(match);
 
-                        match.slice(-1) === "/"
-                        ? matchedDirectories.unshift(match)
-                        : matchedFiles.unshift(match);
+                            !config.silent && config.verbose && console.log(`  ${match}\t${chalk.yellow("ignored")}`);
+                            return;
+                        }
+
+                        if (match.slice(-1) === "/") {
+                            if (config.directoriesOnly || (!config.directoriesOnly && !config.filesOnly)) {
+                                if (!config.dryRun) {
+                                    fs.chmodSync(match, config.mode);
+                                }
+
+                                processed.push(match);
+                            }
+                        }
+                        else {
+                            if (config.filesOnly || (!config.directoriesOnly && !config.filesOnly)) {
+                                if (!config.dryRun) {
+                                    fs.chmodSync(match, config.mode);
+                                }
+
+                                processed.push(match);
+                            }
+                        }
+
+                        !config.silent && config.verbose && console.log(`  ${match}\t${chalk.green(config.mode)}`);
                     });
-
-                if (!config.dryRun) {
-                    if (config.filesOnly || (!config.directoriesOnly && !config.filesOnly)) {
-                        for (let file of matchedFiles) {
-                            fs.chmodSync(file, config.mode);
-                            processed.push(file);
-                        }
-                    }
-
-                    if (config.directoriesOnly || (!config.directoriesOnly && !config.filesOnly)) {
-                        for (let dir of matchedDirectories) {
-                            fs.chmodSync(dir, config.mode);
-                            processed.push(dir);
-                        }
-                    }
-                }
 
                 if (!config.silent) {
                     console.log(`${PLUGIN_NAME}: ${pathToProcess}\t${chalk.green(config.mode)} (${processed.length} path(s), ${ignored.length} ignored)`);
