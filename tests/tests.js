@@ -202,6 +202,45 @@ module.exports = function () {
             }
         });
 
+        it("should not perform an output if silent is set", () => {
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true});
+            const origLog = global.console.log;
+
+            global.console.log = jest.fn();
+
+            plugin.setPermissions();
+
+            expect(global.console.log).toHaveBeenCalledTimes(0);
+
+            global.console.log = origLog;
+        });
+
+        it("should perform single output for each glob if nither verbose nor silent are set", () => {
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**'});
+            const origLog = global.console.log;
+
+            global.console.log = jest.fn();
+
+            plugin.setPermissions();
+
+            expect(global.console.log).toHaveBeenCalledTimes(1);
+
+            global.console.log = origLog;
+        });
+
+        it("should perform single output for each file matching the glob if verbose is set", () => {
+            const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', verbose: true});
+            const origLog = global.console.log;
+
+            global.console.log = jest.fn();
+
+            plugin.setPermissions();
+
+            expect(global.console.log).toHaveBeenCalledTimes(5);
+
+            global.console.log = origLog;
+        });
+
         if (os.platform() !== "win32") {
             it("should set permissions for files", () => {
                 const plugin = new ChmodWebpackPlugin({path: testFile1, silent: true, mode: 755});
@@ -250,6 +289,17 @@ module.exports = function () {
                 expect(getChmod(testDir2)).toEqual(755);
                 expect(getChmod(testFile1)).toEqual(755);
                 expect(getChmod(testFile2)).toEqual(755);
+            });
+
+            it("should not set the permission for excluded paths", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', exclude: testFile2, silent: true, mode: 755});
+
+                plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(755);
+                expect(getChmod(testDir2)).toEqual(755);
+                expect(getChmod(testFile1)).toEqual(755);
+                expect(getChmod(testFile2)).toEqual(645);
             });
         }
     });

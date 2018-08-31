@@ -41,7 +41,7 @@ class ChmodWebpackPlugin
 
             // path should be taken only from config
             cfg.path = config.path || undefined;
-            cfg.mode = config.mode + "";
+            cfg.mode = cfg.mode + "";
 
             if (typeof cfg.path === "string") {
                 cfg.path = [cfg.path];
@@ -159,9 +159,7 @@ class ChmodWebpackPlugin
                         !config.silent && config.verbose && console.log(`  ${match}\t${chalk.green(config.mode)}`);
                     });
 
-                if (!config.silent) {
-                    console.log(`${PLUGIN_NAME}: ${pathToProcess}\t${chalk.green(config.mode)} (${processed.length} path(s), ${ignored.length} ignored)`);
-                }
+                !config.silent && console.log(`${PLUGIN_NAME}: ${pathToProcess}\t${chalk.green(config.mode)} (${processed.length} path(s), ${ignored.length} ignored)`);
 
                 result.push({
                                 path:        pathToProcess,
