@@ -16,6 +16,26 @@ This plugin allows you to set files and directories permissions after bundle com
 npm i --save chmod-webpack-plugin
 ```
 
+## Example
+```javascript
+// webpack.conf.js
+const ChmodWebpackPlugin = require("chmod-webpack-plugin");
+
+module.exports = {
+    plugins: [
+        new ChmodWebpackPlugin([
+                                   {path: "dist/dist/", mode: 660},
+                                   {path: "dist/bin/**"},
+                                   {path: "dist/public/", mode: 640},
+                               ],
+                               {
+                                   verbose: true,
+                                   mode:    770,
+                               }),
+    ],
+};
+```
+
 ## Usage
 ```javascript
 // webpack.conf.js
@@ -65,4 +85,16 @@ const config = {
 
 #### common options _(optional)_
 Object of parameters tat will be used as default for all configs.  
-Has the same structure with config entity, instead of `.path` parameter, which is ignored here. 
+Has the same structure with config entity, instead of `.path` parameter, which is ignored here.
+
+## Tests
+```bash
+npm i
+npm run test
+```
+
+## Coverage
+```bash
+npm i
+npm run test:coverage
+```
