@@ -32,13 +32,15 @@ class ChmodWebpackPlugin
             }
 
             const cfg = {
-                path:      undefined,
-                recursive: true,
-                mode:      644,
-                root:      undefined,
-                verbose:   true,
-                silent:    false,
-                dryDun:    false,
+                path:            undefined,
+                recursive:       true,
+                mode:            644,
+                root:            undefined,
+                verbose:         true,
+                silent:          false,
+                dryDun:          false,
+                filesOnly:       false,
+                directoriesOnly: false,
                 ...commonOptions,
                 ...config,
             };
@@ -81,10 +83,6 @@ class ChmodWebpackPlugin
     }
 
     setPermissions() {
-        if (!this.configs || !this.configs.length) {
-            throw new Error("No configs");
-        }
-
         const result = [];
 
         for (let config of this.configs) {
@@ -117,15 +115,18 @@ class ChmodWebpackPlugin
                     });
 
                 if (!config.dryRun) {
-                    for (let file of matchedFiles) {
-                        fs.chmodSync(file, config.mode);
-                        processed.push(file);
-
+                    if (config.filesOnly || (!config.directoriesOnly && !config.filesOnly)) {
+                        for (let file of matchedFiles) {
+                            fs.chmodSync(file, config.mode);
+                            processed.push(file);
+                        }
                     }
 
-                    for (let dir of matchedDirectories) {
-                        fs.chmodSync(dir, config.mode);
-                        processed.push(dir);
+                    if (config.directoriesOnly || (!config.directoriesOnly && !config.filesOnly)) {
+                        for (let dir of matchedDirectories) {
+                            fs.chmodSync(dir, config.mode);
+                            processed.push(dir);
+                        }
                     }
                 }
 

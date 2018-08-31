@@ -44,6 +44,19 @@ module.exports = function () {
                 expect(e).toBeInstanceOf(Error);
             }
 
+            let errorsEmitted = false;
+
+            try {
+                new ChmodWebpackPlugin({path: "somePath1"});
+            }
+            catch (e) {
+                errorsEmitted = true;
+            }
+
+            expect(errorsEmitted).toBeFalsy();
+        });
+
+        it("should throw on bad path parameter", () => {
             try {
                 new ChmodWebpackPlugin({path: 123123});
             }
@@ -68,9 +81,29 @@ module.exports = function () {
             let errorsEmitted = false;
 
             try {
-                new ChmodWebpackPlugin({path: "somePath1", silent: true});
-                new ChmodWebpackPlugin([{path: "somePath2", silent: true}]);
-                new ChmodWebpackPlugin([{path: ["somePath3", "somePath4"], silent: true}]);
+                new ChmodWebpackPlugin({path: "somePath1"});
+                new ChmodWebpackPlugin([{path: "somePath2"}]);
+                new ChmodWebpackPlugin([{path: ["somePath3", "somePath4"]}]);
+            }
+            catch (e) {
+                errorsEmitted = true;
+            }
+
+            expect(errorsEmitted).toBeFalsy();
+        });
+
+        it("should throw if root is not a string", () => {
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", root: 123123});
+            }
+            catch (e) {
+                expect(e).toBeInstanceOf(Error);
+            }
+
+            let errorsEmitted = false;
+
+            try {
+                new ChmodWebpackPlugin({path: "somePath1", root: "somePath2"});
             }
             catch (e) {
                 errorsEmitted = true;
@@ -129,10 +162,10 @@ module.exports = function () {
     });
 
     describe(".setPermissions()", () => {
-        let testDir1 = path.join(__dirname, "test_dir");
-        let testDir2 = path.join(testDir1, "test_dir");
-        let testFile1 = path.join(testDir1, "test_file");
-        let testFile2 = path.join(testDir2, "test_file");
+        let testDir1 = path.join(__dirname, "test_dir1");
+        let testDir2 = path.join(testDir1, "test_dir2");
+        let testFile1 = path.join(testDir1, "test_file1");
+        let testFile2 = path.join(testDir2, "test_file2");
 
         if (os.platform() === "win32") {
             testDir1 = ChmodWebpackPlugin.fixWindowsPath(testDir1);
@@ -148,6 +181,11 @@ module.exports = function () {
             fs.mkdirSync(testDir2);
             fs.writeFileSync(testFile1, "");
             fs.writeFileSync(testFile2, "");
+
+            fs.chmodSync(testDir1, "770");
+            fs.chmodSync(testDir2, "770");
+            fs.chmodSync(testFile1, "645");
+            fs.chmodSync(testFile2, "645");
         });
         afterEach(() => {
             rimraf.sync(testDir1);
@@ -171,6 +209,47 @@ module.exports = function () {
                 plugin.setPermissions();
 
                 expect(getChmod(testFile1)).toEqual(755);
+            });
+
+            it("should set permissions for directories", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1, silent: true, mode: 755});
+
+                plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(755);
+            });
+
+            it("should set permissions only for directories if directoriesOnly is set", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, directoriesOnly: true});
+
+                plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(755);
+                expect(getChmod(testDir2)).toEqual(755);
+                expect(getChmod(testFile1)).toEqual(645);
+                expect(getChmod(testFile2)).toEqual(645);
+            });
+
+            it("should set permissions only for files if filesOnly is set", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, filesOnly: true});
+
+                plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(770);
+                expect(getChmod(testDir2)).toEqual(770);
+                expect(getChmod(testFile1)).toEqual(755);
+                expect(getChmod(testFile2)).toEqual(755);
+            });
+
+            it("should set permissions set permissions both for files and directories if both directoriesOnly and filesOnlyare set", () => {
+                const plugin = new ChmodWebpackPlugin({path: testDir1 + '/**', silent: true, mode: 755, filesOnly: true, directoriesOnly: true});
+
+                plugin.setPermissions();
+
+                expect(getChmod(testDir1)).toEqual(755);
+                expect(getChmod(testDir2)).toEqual(755);
+                expect(getChmod(testFile1)).toEqual(755);
+                expect(getChmod(testFile2)).toEqual(755);
             });
         }
     });
