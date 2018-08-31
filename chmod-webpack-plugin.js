@@ -26,7 +26,6 @@ class ChmodWebpackPlugin
 
             const cfg = {
                 path:            undefined,
-                recursive:       true,
                 mode:            644,
                 root:            undefined,
                 verbose:         false,
