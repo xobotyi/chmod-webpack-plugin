@@ -30,7 +30,7 @@ class ChmodWebpackPlugin
                 root:            undefined,
                 verbose:         false,
                 silent:          false,
-                dryDun:          false,
+                dryRun:          false,
                 filesOnly:       false,
                 directoriesOnly: false,
                 exclude:         [],
